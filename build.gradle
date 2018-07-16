@@ -1,0 +1,32 @@
+group 'bet analysis tool'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+
+mainClassName = 'app'
+
+jar {
+    baseName = 'gs-gradle'
+    version =  '0.1.0'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "joda-time:joda-time:2.2"
+    testCompile "junit:junit:4.12"
+
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.0.1'
+
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
+
+}
