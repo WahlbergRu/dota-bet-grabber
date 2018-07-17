@@ -11,6 +11,7 @@ import utils.UtilsParser;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.List;
 
 public class Methods {
     static final String openDataUrl = "https://api.opendota.com/api/";
+    private CSVReader reader = null;
 
     /**
      * TODO: вынести
@@ -26,7 +28,12 @@ public class Methods {
      * @return JsonArray
      */
 
-    private JsonArray getDataFromApi(String url){
+    private JsonArray getDatasFromApi(String url){
+        UtilsParser utilsParser = new UtilsParser();
+        return utilsParser.getDatasByUrl(url);
+    }
+
+    private JsonObject getDataFromApi(String url){
         UtilsParser utilsParser = new UtilsParser();
         return utilsParser.getDataByUrl(url);
     }
@@ -38,20 +45,59 @@ public class Methods {
     private ArrayList<JsonArray> getProTeamMatches(){
         String csvFile = "src/main/data/teams.csv";
         CSVReader reader = null;
-        ArrayList<JsonArray> matches = new ArrayList<>();
+        ArrayList<JsonArray> teamMatches = new ArrayList<>();
 
         try {
             String[] line;
             reader = new CSVReader(new FileReader(csvFile));
             while ((line = reader.readNext()) != null) {
                 String url = this.openDataUrl + "teams/" + line[1] + "/matches";
-                matches.add(this.getDataFromApi(url));
+                teamMatches.add(this.getDatasFromApi(url));
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return matches;
+        try {
+            reader = new CSVReader(new FileReader(csvFile));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        ArrayList<JsonArray> expensionTeamMatches = new ArrayList<>();
+
+        try {
+            for (JsonArray matches : teamMatches) {
+                JsonArray expensionMatches = new JsonArray();
+                for (JsonElement match : matches) {
+                    if (match.getAsJsonObject().get("start_time").getAsDouble() > 1522281600) {
+                        String url = this.openDataUrl + "matches/" + match.getAsJsonObject().get("match_id");
+                        JsonElement matchExtension = this.getDataFromApi(url).getAsJsonObject();
+                        expensionMatches.add(matchExtension);
+                    }
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
+                }
+                String[] line = reader.readNext();
+                System.out.println(line[0] + " Закончили полученние данных для команды");
+
+                try {
+                    Thread.sleep(4000);
+                } catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+
+                expensionTeamMatches.add(expensionMatches);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+        return expensionTeamMatches;
     }
 
     private void SaveToCSV(String fileName, String line){
@@ -73,7 +119,6 @@ public class Methods {
 
         ArrayList<JsonArray> teamMatches = this.getProTeamMatches();
 
-        int i = 0;
         CSVReader reader = null;
 
         try {
@@ -88,20 +133,18 @@ public class Methods {
 
                 String[] line = reader.readNext();
 
-                CSVWriter writer = new CSVWriter(new FileWriter("src/main/data/csv/" + line[0] + ".csv")) ;
+                PrintWriter writer = new PrintWriter(new FileWriter("src/main/data/teamMatches/" + line[0] + ".txt")) ;
 
                 for(JsonElement match: matches){
                     JsonObject jsonText = match.getAsJsonObject();
                     System.out.println(jsonText.toString());
                     if (jsonText.get("start_time").getAsDouble() > 1522281600){
-                        writer.writeNext(new String[]{jsonText.toString()}, false);
+                        writer.write(jsonText.toString());
                     }
                 }
 
                 writer.flush();
                 writer.close();
-
-                i++;
             }
         } catch (IOException e) {
             e.printStackTrace();
