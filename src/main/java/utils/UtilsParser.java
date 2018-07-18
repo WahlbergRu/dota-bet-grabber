@@ -69,6 +69,15 @@ public class UtilsParser {
             item = root.getAsJsonObject(); //May be an array, may be an object.
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("Error from server");
+
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException ie){
+                ie.printStackTrace();
+            }
+
+            return this.getDataByUrl(url);
         }
 
         return item;

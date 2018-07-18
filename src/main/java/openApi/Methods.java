@@ -74,11 +74,11 @@ public class Methods {
                         String url = this.openDataUrl + "matches/" + match.getAsJsonObject().get("match_id");
                         JsonElement matchExtension = this.getDataFromApi(url).getAsJsonObject();
                         expensionMatches.add(matchExtension);
-                    }
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e){
-                        e.printStackTrace();
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e){
+                            e.printStackTrace();
+                        }
                     }
                 }
                 String[] line = reader.readNext();
