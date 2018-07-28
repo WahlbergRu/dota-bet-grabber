@@ -46,8 +46,9 @@ public class UtilsParser {
 
     public JsonObject getDataByUrl(String url) {
         URL openApi = null;
-        URLConnection request = null;
+        HttpURLConnection request = null;
         JsonObject item = null;
+        int code = 0;
 
         try {
             openApi = new URL(url);
@@ -56,29 +57,33 @@ public class UtilsParser {
         }
 
         try {
-            request = openApi.openConnection();
+            request = (HttpURLConnection)openApi.openConnection();
+            request.setRequestMethod("GET");
             request.connect();
+            code = request.getResponseCode();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        try {
-            // Convert to a JSON object to print data
-            JsonParser jp = new JsonParser(); //from gson
-            JsonElement root = jp.parse(new InputStreamReader((InputStream) request.getContent())); //Convert the input stream to a json element
-            item = root.getAsJsonObject(); //May be an array, may be an object.
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Error from server");
-
+        if (code != 200){
             try {
                 Thread.sleep(10000);
             } catch (InterruptedException ie){
                 ie.printStackTrace();
             }
 
-            return this.getDataByUrl(url);
+            item = this.getDataByUrl(url);
+        } else {
+            try {
+                // Convert to a JSON object to print data
+                JsonParser jp = new JsonParser(); //from gson
+                JsonElement root = jp.parse(new InputStreamReader((InputStream) request.getContent())); //Convert the input stream to a json element
+                item = root.getAsJsonObject(); //May be an array, may be an object.
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
+
 
         return item;
     }

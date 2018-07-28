@@ -72,12 +72,10 @@ public class Methods {
                 for (JsonElement match : matches) {
                     if (match.getAsJsonObject().get("start_time").getAsDouble() > 1522281600) {
                         String url = this.openDataUrl + "matches/" + match.getAsJsonObject().get("match_id");
-                        JsonElement matchExtension = this.getDataFromApi(url).getAsJsonObject();
-                        expensionMatches.add(matchExtension);
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e){
-                            e.printStackTrace();
+                        JsonElement data = this.getDataFromApi(url);
+                        if (data != null){
+                            JsonElement matchExtension = data.getAsJsonObject();
+                            expensionMatches.add(matchExtension);
                         }
                     }
                 }
@@ -85,7 +83,7 @@ public class Methods {
                 System.out.println(line[0] + " Закончили полученние данных для команды");
 
                 try {
-                    Thread.sleep(4000);
+                    Thread.sleep(10000);
                 } catch (InterruptedException e){
                     e.printStackTrace();
                 }
@@ -133,13 +131,13 @@ public class Methods {
 
                 String[] line = reader.readNext();
 
-                PrintWriter writer = new PrintWriter(new FileWriter("src/main/data/teamMatches/" + line[0] + ".txt")) ;
+                PrintWriter writer = new PrintWriter(new FileWriter("src/main/data/teamMatches/" + line[0] + ".txt"), true) ;
 
                 for(JsonElement match: matches){
                     JsonObject jsonText = match.getAsJsonObject();
                     System.out.println(jsonText.toString());
                     if (jsonText.get("start_time").getAsDouble() > 1522281600){
-                        writer.write(jsonText.toString());
+                        writer.write(jsonText.toString() + " \n");
                     }
                 }
 
